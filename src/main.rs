@@ -1,4 +1,4 @@
-// #![windows_subsystem = "windows"]
+#![windows_subsystem = "windows"]
 mod amoled_image;
 
 use amoled_image::AmoledImageConverter;
@@ -28,19 +28,10 @@ struct Amoled {
     black_point: u8,
     black_point_slider: slider::State,
     black_point_input: text_input::State,
-    // create_button: button::State,
-    // first_black_pixel_count: usize,
-    // first_pixel_count: usize,
-    // second_black_pixel_count: usize,
-    // second_pixel_count: usize,
     path_input: text_input::State,
     path_input_value: Option<PathBuf>,
     file_open_button: button::State,
     image: Option<AmoledImageConverter>,
-    // first_image_pixels: Option<ImagePixels>,
-    // second_image_pixels: Option<ImagePixels>,
-    // thumbnail_image: ImageBuffer<Bgra<u8>, Vec<u8>>,
-    // decoded_image: ImageBuffer<Bgra<u8>, Vec<u8>>,
 }
 
 #[derive(Debug, Clone)]
@@ -106,7 +97,7 @@ impl Sandbox for Amoled {
                 self.handle_image_change();
             }
             Message::BlackPointInputChanged(bp_string) => {
-                // Only update the text input if it is a u8 value
+                // Only update the text input if it is a u8 value or set it to 0 if it is empty.
                 if bp_string.eq("") {
                     self.update(Message::BlackPointChanged(0));
                 } else if let Ok(bp) = bp_string.parse::<u8>() {

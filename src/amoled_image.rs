@@ -9,13 +9,6 @@ use iced::{
 };
 use image::ImageError;
 
-// #[derive(Debug, Default, Clone)]
-// struct ImagePixels {
-//     width: u32,
-//     height: u32,
-//     pixels: Vec<u8>,
-// }
-
 const THUMBNAIL_MAX_WIDTH: u32 = 1024;
 const THUMBNAIL_MIN_WIDTH: u32 = 256;
 const THUMBNAIL_MAX_HEIGHT: u32 = 1024;
@@ -25,7 +18,6 @@ const THUMBNAIL_MIN_HEIGHT: u32 = 256;
 pub enum AmoledConversionError {
     DecodeError(io::Error),
     ImageError(ImageError),
-    // ImageParseError,
 }
 
 impl From<ImageError> for AmoledConversionError {
@@ -45,16 +37,9 @@ impl fmt::Display for AmoledConversionError {
         match self {
             AmoledConversionError::DecodeError(e) => write!(f, "Decode error: {}", e),
             AmoledConversionError::ImageError(e) => write!(f, "Image error: {}", e),
-            // AmoledImageError::ImageParseError => write!(f, "Image parse error"),
         }
     }
 }
-
-// impl From<std::io::Error> for DecodeError {
-//     fn from(err: std::io::Error) -> Self {
-//         todo!()
-//     }
-// }
 
 struct PixelInfo {
     pixels: usize,
@@ -67,7 +52,6 @@ type Result<T> = std::result::Result<T, AmoledConversionError>;
 pub struct AmoledImageConverter {
     width: u32,
     height: u32,
-    // data: ImagePixels,
     image: ImageBuffer<Bgra<u8>, Vec<u8>>,
     converted_image: ImageBuffer<Bgra<u8>, Vec<u8>>,
     pub thumbnail: ImageBuffer<Bgra<u8>, Vec<u8>>,
@@ -112,7 +96,7 @@ impl AmoledImageConverter {
             width: bgra8_image.width(),
             height: bgra8_image.height(),
             image: bgra8_image.to_owned(),
-            converted_image: converted_image,
+            converted_image,
             thumbnail,
             converted_thumbnail,
             image_handle: Handle::from_memory(bgra8_image.as_raw().to_owned()),
@@ -131,14 +115,6 @@ impl AmoledImageConverter {
 
     fn calc_black_pixel_percentage(black_pixel_count: usize, pixel_count: usize) -> usize {
         black_pixel_count * 100 / pixel_count
-    }
-
-    pub fn get_width(&self) -> u32 {
-        self.width
-    }
-
-    pub fn get_height(&self) -> u32 {
-        self.height
     }
 
     pub fn set_black_point(&mut self, black_point: u8) {
