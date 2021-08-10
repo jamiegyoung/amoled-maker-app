@@ -16,6 +16,7 @@ pub fn main() -> iced::Result {
     Amoled::run(Settings {
         window: (window::Settings {
             size: (600, 400),
+            min_size: Some((600, 400)),
             resizable: true,
             ..window::Settings::default()
         }),
@@ -31,6 +32,7 @@ struct Amoled {
     path_input: text_input::State,
     path_input_value: Option<PathBuf>,
     file_open_button: button::State,
+    file_save_button: button::State,
     image: Option<AmoledImageConverter>,
 }
 
@@ -39,8 +41,8 @@ pub enum Message {
     PathChanged(String),
     BlackPointChanged(u8),
     BlackPointInputChanged(String),
-    // FileCreated,
     FileButtonpressed,
+    SaveButtonPressed,
 }
 
 impl Amoled {
@@ -85,7 +87,6 @@ impl Sandbox for Amoled {
                 self.path_input_value = Some(PathBuf::from(path_string));
                 self.handle_image_change();
             }
-            // Message::FileCreated => todo!(),
             Message::FileButtonpressed => {
                 self.path_input_value = match FileDialog::new()
                     .add_filter("image", &["png", "jpg", "jpeg"])
@@ -102,6 +103,23 @@ impl Sandbox for Amoled {
                     self.update(Message::BlackPointChanged(0));
                 } else if let Ok(bp) = bp_string.parse::<u8>() {
                     self.update(Message::BlackPointChanged(bp));
+                }
+            }
+            Message::SaveButtonPressed => {
+                println!("Test");
+                let potential_save_path = FileDialog::new().add_filter("png", &["png"]).save_file();
+                if let Some(save_path) = potential_save_path {
+                    if let Some(image) = self.image.as_mut() {
+                        // todo: handle the error here instead of unwrapping
+                        println!("Saving file");
+                        image::save_buffer(
+                            save_path,
+                            &image.as_rgba_image(),
+                            image.get_width(),
+                            image.get_height(),
+                            image::ColorType::Rgba8,
+                        ).unwrap();
+                    }
                 }
             }
         }
@@ -140,7 +158,6 @@ impl Sandbox for Amoled {
         let top_container = Container::new(
             Column::new()
                 .spacing(20)
-                .padding(40)
                 .push(title)
                 .push(path_input)
                 .push(
@@ -173,10 +190,19 @@ impl Sandbox for Amoled {
         let content = Column::new().push(top_container).align_items(Align::Center);
 
         if let Some(img) = self.image.as_mut() {
-            let content = content.push(img.view());
+            let mut content = content.push(
+                Column::new()
+                    .push(img.view())
+                    .push(
+                        Button::new(&mut self.file_save_button, Text::new("Save"))
+                            .on_press(Message::SaveButtonPressed),
+                    )
+                    .align_items(Align::Center)
+                    .spacing(20)
+                    .padding(20),
+            );
+            content = content.push(Row::new().height(Length::Fill));
             return Container::new(content)
-                .width(Length::Fill)
-                .height(Length::Fill)
                 .center_x()
                 .center_y()
                 .into();

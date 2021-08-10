@@ -54,7 +54,7 @@ pub struct AmoledImageConverter {
     height: u32,
     image: ImageBuffer<Bgra<u8>, Vec<u8>>,
     converted_image: ImageBuffer<Bgra<u8>, Vec<u8>>,
-    pub thumbnail: ImageBuffer<Bgra<u8>, Vec<u8>>,
+    thumbnail: ImageBuffer<Bgra<u8>, Vec<u8>>,
     converted_thumbnail: ImageBuffer<Bgra<u8>, Vec<u8>>,
     first_image_viewer: viewer::State,
     second_image_viewer: viewer::State,
@@ -190,6 +190,22 @@ impl AmoledImageConverter {
         }
     }
 
+    pub fn as_rgba_image(&self) -> Vec<u8> {
+        let mut old_image = self.converted_image.to_vec();
+        for i in (0..old_image.to_owned().iter_mut().len() - 2).step_by(4) {
+            old_image.swap(i as usize, (i + 2) as usize)
+        }
+        old_image
+    }
+
+    pub fn get_width(&self) -> u32 {
+        self.width
+    }
+
+    pub fn get_height(&self) -> u32 {
+        self.height
+    }
+
     pub fn view(&mut self) -> Element<Message> {
         Container::new(
             Row::new()
@@ -214,6 +230,7 @@ impl AmoledImageConverter {
                 ),
         )
         .width(Length::Shrink)
+        .height(Length::Fill)
         .into()
     }
 
